@@ -27,7 +27,6 @@ class Player
 
         Money *transaction;
         
-
     private:
         std::string name;
         int playerIndex;
