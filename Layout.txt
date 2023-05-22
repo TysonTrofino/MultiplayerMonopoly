@@ -1,0 +1,67 @@
+main.cpp
+	-start game
+	-initialize number of players
+	-initialize properties
+		-price, rent, house, hotel
+
+players class
+	money.h
+	
+	Variables:
+	-name
+	-money
+	-properties: array of property index
+	-place on board
+
+property class
+	player.h	
+	money.h	
+
+	Variables:
+	-property
+	-cost
+	-rent
+	-house cost
+	-hotel cost
+	
+	Functions:
+	getPropertyList
+	getPropertyCost
+
+	getPropertyOwner
+	setPropertyOwner
+
+	getHouseCost
+	SetNumberOfHouses
+
+	getHotelCost
+	SetNumberOfHotels
+	
+Money class
+	player.h
+	
+	passGo
+
+	buyProperty
+	sellProperty
+	
+	PayRent
+	PayTaxes
+		
+
+	BuyHouse
+	SellHouse
+
+	BuyHotel
+	SellHotel
+
+	
+	
+	
+	
+
+
+	
+	
+	
+	
