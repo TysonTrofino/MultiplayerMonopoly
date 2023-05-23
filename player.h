@@ -23,6 +23,7 @@ class Player
         void updatePlayerLocation(int location);
 
         void AddProperty(int propertyLocation);
+        std::vector<int>getPropertyLocations();
         void deleteProperty(int propertyLocation);
 
         Money *transaction;

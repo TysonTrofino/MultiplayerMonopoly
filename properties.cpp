@@ -48,9 +48,10 @@ Properties::Properties(std::string propertyFile)
         propertyValues->buyingCost = std::stoi(dataTransfer[1]);
         propertyValues->houseCost = std::stoi(dataTransfer[2]);
         propertyValues->hotelCost = std::stoi(dataTransfer[3]);
-        propertyValues->numberOfHotels = 0;
-        propertyValues->numberOfHouses = 0;
-        propertyValues->ownerIndex = -1;
+        
+        PropertyInfo & info = *propertyValues;
+        
+        initializePropertyOwner(info);
 
         property->push_back(*propertyValues);
 
@@ -58,8 +59,40 @@ Properties::Properties(std::string propertyFile)
     }
 }
 
+void Properties::initializePropertyOwner(PropertyInfo &info)
+{
+    info.numberOfHotels = 0;
+    info.numberOfHouses = 0;
+    info.ownerIndex = -1;
+    info.owner = "";
+}
+
+//void Properties::setPropertiesToInitialState()
+
 void Properties::printPropertiesList(std::vector<int>list)
 {
+    int size = list.size();
+    std::cout << std::left << std::setw(10) << "Index";
+    std::cout << std::left << std::setw(10) << "Owner";
+    std::cout << std::left << std::setw(15) << "Property";
+    std::cout << std::left << std::setw(12) << "House Cost";
+    std::cout << std::left << std::setw(11) << "Hotel Cost";
+    std::cout << std::left << std::setw(11) << "Rent Price";
+    std::cout << std::left << std::setw(11) << "Sell Price";
+    std::cout << std::endl;
+    std::cout << std::setw(75) << std::setfill('-') << "" << std::endl;
+
+    for(int i = 0; i<size; i++)
+    {
+        std::cout << std::left << std::setw(10) << i;
+        std::cout << std::left << std::setw(10) << property->at(list[i]).owner;
+        std::cout << std::left << std::setw(15) << property->at(list[i]).propertyName;
+        std::cout << std::left << std::setw(12) << property->at(list[i]).houseCost;
+        std::cout << std::left << std::setw(11) << property->at(list[i]).hotelCost;
+        std::cout << std::left << std::setw(11) << calculateRent(list[i]);
+        std::cout << std::left << std::setw(11) << calculateSellingCost(list[i]);
+        std::cout << std::endl;
+    }
    
 }
 
@@ -111,10 +144,25 @@ void Properties::buyProperty(Player *buyer, int propertyIndex)
     }
 }
 
+void Properties::sellProperty(Player *seller, int propertyIndex, int required)
+{
+    PropertyInfo & info = property->at(propertyIndex);
+    transaction(seller->getName(), info.propertyName, " you have sold ");
+    initializePropertyOwner(info);
+
+    seller->transaction->addMoney(calculateSellingCost(propertyIndex));
+    seller->deleteProperty(propertyIndex);
+
+}
+
 void Properties::payRent(Player *owner, Player *renter, int propertyIndex)
 {
     PropertyInfo & info = property->at(propertyIndex);
     int rent = calculateRent(propertyIndex);
+    int option;
+    std::vector<std::string> list;
+
+    welcomeTo(info.propertyName, "The rent is", rent);
 
     if(checkMoney(renter->transaction->getMoneyAmount(), rent))
     {
@@ -125,22 +173,46 @@ void Properties::payRent(Player *owner, Player *renter, int propertyIndex)
         owner->transaction->addMoney(rent);
 
     } else {
-        cantAfford(renter->getName(), " pay the rent.  You have the following options:");
-        std::vector<std::string> list = {"Sell Properties", "Quit Game"};
-        printList(list);
+        
+        int renterPropSize = renter->getPropertyLocations().size();
+        std::vector<int> renterPropertys = renter->getPropertyLocations();
 
-        std::string option;
+        if(renterPropSize > 0) {   
+            cantAfford(renter->getName(), " pay the rent currently.  You have the following options:");
+            list = {"Sell Properties", "Quit Game"};
+            option = printList(list);
+            
 
-        std::cout<<"Choice"<<endl;
-
-        getline(cin, option);
-
-        switch(std::stoi(option))
-        {
-            case 1: 
+        } else {
+            cantAfford(renter->getName(), " pay the rent and have no properties to sell.  You have gone bankrupt and the game is over for you");
+            option = 2;
         }
 
+        switch(option)
+        {
+            case 1: 
+                printPropertiesList(renterPropertys);
+                std::cout<<"Which property do you want to sell?"<<std::endl;
+                getline(std::cin, option);
 
+                sellProperty(renter, renterPropertys[std::stoi(option)]);
+                payRent(owner, renter, propertyIndex);
+                break;
+            case 2:
+                if(renterPropSize > 0)
+                {
+                    for(int i = 0; i<renterPropSize; i++)
+                    {
+                        PropertyInfo &info = property->at(renterPropertys[i]);
+                        initializePropertyOwner(info);
+                    }
+                }
+                delete renter;
+                renter = NULL;
+                break;
+
+
+        };
     }
 }
 
@@ -169,14 +241,33 @@ bool Properties::checkMoney(int playerWealth, int price)
     return false;
 }
 
-void Properties::printList(std::vector<str::string> list)
+int Properties::printList(std::vector<std::string> list)
 {
     int size = list.size();
+    std::string option;
+    bool validAns = 0;
+
     std::cout << "------Menu------" << std::endl;
     for(int i = 0; i < size; i++)
     {
         std::cout << i+1 << ". " << list[i] << std::endl;
     }
+
+    do
+    {
+        std::cout<<"Choice"<<std::endl;
+        getline(std::cin, option);
+
+        if(std::stoi(option) < 1 || std::stoi(option) > size) {
+            std::cout << "Please enter a valid option" << std::endl;
+        } else {
+            validAns = 1;
+        }
+            
+    }while(!validAns);
+
+
+
 }
 
 void Properties::cantAfford(std::string name, std::string phrase)
@@ -189,4 +280,8 @@ void Properties::transaction(std::string owner, std::string property, std::strin
     std::cout << owner << phrase << property << std::endl;
 }
 
+void Properties::welcomeTo(std::string property, std::string phrase, int price)
+{
+    std::cout << "Welcome to "<< property <<"! " << phrase << " $" << price << std::endl;
+}
 

@@ -25,9 +25,9 @@ class Properties
         static int getPropertyOwnerIndex(int propertyIndex);
 
         static void buyProperty(Player *buyer, int propertyIndex);
-        static void sellProperty(Player seller, int propertyIndex);
+        static void sellProperty(Player *seller, int propertyIndex, int required = 0);
 
-        static void payRent(Player owner, Player renter, int propertyIndex);
+        static void payRent(Player *owner, Player *renter, int propertyIndex);
 
         static void buyHouse(Player owner, int propertyIndex);
         static void buyHotel(Player owner, int propertyIndex);
@@ -58,11 +58,13 @@ class Properties
         static std::vector<PropertyInfo>*property;
 
         static bool checkMoney(int playerWealth, int price);
+        static void initializePropertyOwner(PropertyInfo &info);
         
-        static void printList(std::vector<std::string>list);
+        static int printList(std::vector<std::string>list);
         static void cantAfford(std::string name, std::string phrase = "");
         static void transaction(std::string owner, std::string property, std::string phrase = ", you have bought ");
-        
+        static void printPropertiesList(std::vector<int>list);
+        static void welcomeTo(std::string property, std::string phrase, int price);
     protected:    
         Properties(std::string propertyFile);
 

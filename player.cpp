@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 Player::Player(std::string name_, int playerIndex_)
 {
@@ -48,7 +49,13 @@ void Player::AddProperty(int propertyLocation)
     propertyArray.push_back(propertyLocation);
 }
 
-// void player::deleteProperty(int propertyLocation)
-// {
-    
-// }
+std::vector<int> Player::getPropertyLocations()
+{
+    return propertyArray;
+}
+
+void Player::deleteProperty(int propertyLocation)
+{
+    auto index = std::find(propertyArray.begin(), propertyArray.end(), propertyLocation);
+    propertyArray.erase(propertyArray.begin() + std::distance(propertyArray.begin(), index));
+}
