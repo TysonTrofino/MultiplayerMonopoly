@@ -81,7 +81,7 @@ int Properties::printPropertiesList(std::vector<int>list, std::string printOptio
     oss << std::left << std::setw(11) << "Sell Price";
     oss << std::endl;
 
-    std::vector<std::string>ownersPropertyList = {oss.str(), "1 ----------------- I DO NOT WANT TO SELL ANY PROPERTIES ------------------"};
+    std::vector<std::string>ownersPropertyList = {oss.str(), "1 ----------------- I-DO-NOT-WANT-TO-SELL-ANY-PROPERTIES ------------------"};
     
 
     //std::cout << std::setw(75) << std::setfill('-') << "" << std::endl;
@@ -175,19 +175,19 @@ void Properties::sellProperty(Player *seller, std::vector<int>propertiesList)
 {
     std::string printOption = "Which property do you want to sell?  Please enter the appropriate index:";
 
-    int propertyIndex = printPropertiesList(propertiesList, printOption)-1;
-    if(propertyIndex == 0)
+    int propertyIndex = printPropertiesList(propertiesList, printOption)-2;
+    if(propertyIndex == -1)
     {
         std::cout << "No properties were sold" << std::endl;
        
     } else {
 
-        PropertyInfo & info = property->at(propertyIndex);
+        PropertyInfo & info = property->at(propertiesList[propertyIndex]);
         transaction(seller->getName(), info.propertyName, " you have sold ");
         initializePropertyOwner(info);
 
-        seller->transaction->addMoney(calculateSellingCost(propertyIndex));
-        seller->deleteProperty(propertyIndex);
+        seller->transaction->addMoney(calculateSellingCost(propertiesList[propertyIndex]));
+        seller->deleteProperty(propertiesList[propertyIndex]);
     }
 
 }
