@@ -18,7 +18,7 @@ class Properties
         static Properties* initializeProperties(std::string propertyFile);
 
         static void printPropertiesList();
-        static void printPropertyInfo(int propertyIndex);
+        static void printPropertyInfo(std::vector<int> propertyIndexs);
         
         static int getPropertyCost(int propertyIndex);
         static void printPropertyOwner();
@@ -29,16 +29,19 @@ class Properties
 
         static void payRent(Player *owner, Player *renter, int propertyIndex);
 
-        static void buyHouse(Player owner, int propertyIndex);
-        static void buyHotel(Player owner, int propertyIndex);
+        static void buyHouse(Player *owner, int propertyIndex);
+        static void buyHotel(Player *owner, int propertyIndex);
 
-        static void sellHouse(Player owner, int propertyIndex);
-        static void sellHotel(Player owner, int propertyIndex);
+        static void sellHouse(Player *owner, int propertyIndex);
+        static void sellHotel(Player *owner, int propertyIndex);
 
         static void rentIncrease(int propertyIndex);
 
         static int calculateRent(int propertyIndex);
-        static int calculateSellingCost(int propertyIndex);
+        static int calculateSellingCostProperty(int propertyIndex);
+        static int calculateSellingCostHotel(int propertyIndex);
+        static int calculateSellingCostHouse(int propertyIndex);
+        
 
     
     private:
@@ -63,7 +66,7 @@ class Properties
         static int printList(std::vector<std::string>list, std::string printOptions, bool indexIncluded = 0);
         static void cantAfford(std::string name, std::string phrase = "");
         static void transaction(std::string owner, std::string property, std::string phrase = ", you have bought ");
-        static int printPropertiesList(std::vector<int>list, std::string printOptions = "");
+        static int printPropertiesList(std::vector<int>list, std::string printOptions = "", bool notSelling = false);
         static void welcomeTo(std::string property, std::string phrase, int price);
 
         static int checkNumberOfProperties(Player *player_, std::string cantAffordOption, std::string noPropertiesOption, std::vector<std::string>printListOptions, std::string printListPhrase="");

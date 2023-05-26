@@ -16,7 +16,9 @@ int main(){
     Player *player2 = new Player("Gabb", 1);
 
     Properties::buyProperty(player1, 2);
-    Properties::buyProperty(player1, 1);
+    //Properties::buyProperty(player1, 1);
+
+    Properties::buyHouse(player1, 2);
 
     Properties::buyProperty(player2, 3);
 
@@ -26,8 +28,7 @@ int main(){
 
     Properties::payRent(player2, player1, 3);
 
-    Properties::printPropertyInfo(1);
-    Properties::printPropertyInfo(2);
+    Properties::printPropertyInfo({1,2,3});
 
     //std::cout << player1->getName() << std::endl;
 
