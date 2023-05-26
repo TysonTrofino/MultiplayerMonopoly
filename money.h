@@ -9,16 +9,16 @@ class Money
         Money(std::string name_);
         ~Money();
 
-        int getMoneyAmount();
-        void printMoneyAmount(std::string word = "");
+        int bankAccountBalance();
+        void printBankAccountBalance(std::string word = "");
 
         void passGo();
 
-        void addMoney(int amount);
-        void subtractMoney(int amount);
+        void deposit(int amount);
+        void withdrawal(int amount);
 
     private:
-        int moneyAmount;
+        int balance;
         std::string name;
 };
 

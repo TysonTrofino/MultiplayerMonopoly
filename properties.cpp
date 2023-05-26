@@ -9,8 +9,8 @@
 #include "properties.h"
 #include "player.h"
 
-int maxNumberOfHousesPerProperty = 3;
-int maxNumberOfHotelsPerProperty = 2;
+int maxNumberOfHousesPerProperty;
+int maxNumberOfHotelsPerProperty;
 
 Properties* Properties::instance = NULL;
 std::vector<Properties::PropertyInfo>* Properties::property;
@@ -25,6 +25,8 @@ Properties* Properties::initializeProperties(std::string propertyFile)
 
 Properties::Properties(std::string propertyFile)
 {
+    maxNumberOfHotelsPerProperty = 3;
+    maxNumberOfHousesPerProperty = 2;
     property = new std::vector<Properties::PropertyInfo>;
 
     std::fstream inFile;
@@ -133,14 +135,14 @@ void Properties::buyProperty(Player *buyer, int propertyIndex)
 {
     PropertyInfo & info = property->at(propertyIndex);
 
-    if(checkMoney(buyer->transaction->getMoneyAmount(), info.buyingCost))
+    if(checkMoney(buyer->transaction->bankAccountBalance(), info.buyingCost))
     {
         transaction(buyer->getName(), info.propertyName);
 
         info.owner = buyer->getName();
         info.ownerIndex = buyer->getPlayerIndex();
 
-        buyer->transaction->subtractMoney(info.buyingCost);
+        buyer->transaction->withdrawal(info.buyingCost);
         buyer->AddProperty(propertyIndex);
         
     } else {
@@ -195,7 +197,7 @@ void Properties::sellProperty(Player *seller, std::vector<int>propertiesList)
             case 1:
                 transaction(seller->getName(), info.propertyName, " you have sold everything on");
                 initializePropertyOwner(info);
-                seller->transaction->addMoney(calculateSellingCostProperty(propertiesList[propertyIndex]));
+                seller->transaction->deposit(calculateSellingCostProperty(propertiesList[propertyIndex]));
                 seller->deleteProperty(propertiesList[propertyIndex]);
                 break;
 
@@ -218,13 +220,13 @@ void Properties::payRent(Player *owner, Player *renter, int propertyIndex)
 
     welcomeTo(info.propertyName, "The rent is", rent);
 
-    if(checkMoney(renter->transaction->getMoneyAmount(), rent))
+    if(checkMoney(renter->transaction->bankAccountBalance(), rent))
     {
         transaction(renter->getName(), info.propertyName, " you have landed on ");
         std::cout<< "The rent is: $" << rent << std::endl;
         
-        renter->transaction->subtractMoney(rent);
-        owner->transaction->addMoney(rent);
+        renter->transaction->withdrawal(rent);
+        owner->transaction->deposit(rent);
 
     } else {
         
@@ -234,7 +236,7 @@ void Properties::payRent(Player *owner, Player *renter, int propertyIndex)
         std::ostringstream cantAffordOption;
         std::ostringstream noPropertiesOption;
 
-        cantAffordOption << "the rent at " << info.propertyName << "because you have $" <<renter->transaction->getMoneyAmount() << std::endl;
+        cantAffordOption << "the rent at " << info.propertyName << "because you have $" <<renter->transaction->bankAccountBalance() << std::endl;
         noPropertiesOption << "pay the rent and have no properties to sell.  You have gone bankrupt." << std::endl;
         std::string printListPhrase = "choice";
 
@@ -272,16 +274,16 @@ void Properties::buyHouse(Player *owner, int propertyIndex)
     std::vector<std::string>costPerProperty;
     int multiplyer;
 
-    if(owner->transaction->getMoneyAmount() < info.houseCost)
+    if(owner->transaction->bankAccountBalance() < info.houseCost)
     {   
         oss << "buy a house on " << info.propertyName << "." << std::endl;
-        oss << "1 house costs $" <<info.houseCost << " and you have $" << owner->transaction->getMoneyAmount() << " in your bank account." << std::endl; 
+        oss << "1 house costs $" <<info.houseCost << " and you have $" << owner->transaction->bankAccountBalance() << " in your bank account." << std::endl; 
         cantAfford(owner->getName(), oss.str());
         return;
     }
 
     std::cout << "There are currently " << info.numberOfHouses << " and you can have up to " << maxNumberOfHousesPerProperty <<"."<<std::endl; 
-    std::cout << owner->getName() << ", you currently have $" << owner->transaction->getMoneyAmount() << "." << std::endl;
+    std::cout << owner->getName() << ", you currently have $" << owner->transaction->bankAccountBalance() << "." << std::endl;
 
     if(info.numberOfHouses == maxNumberOfHousesPerProperty) {
         std::cout << "You have bought the max number of houses for " << info.propertyName << std::endl;
@@ -298,11 +300,11 @@ void Properties::buyHouse(Player *owner, int propertyIndex)
 
     int numberOfHousesToPurchase = printList(costPerProperty, "How many houses would you like to purchase?", 1);
 
-    if(checkMoney(owner->transaction->getMoneyAmount(), info.houseCost * numberOfHousesToPurchase))
+    if(checkMoney(owner->transaction->bankAccountBalance(), info.houseCost * numberOfHousesToPurchase))
     {
         transaction(owner->getName(), info.propertyName, ", you have bought a house on");
 
-        owner->transaction->subtractMoney(info.houseCost * numberOfHousesToPurchase);
+        owner->transaction->withdrawal(info.houseCost * numberOfHousesToPurchase);
         info.numberOfHouses += numberOfHousesToPurchase;
 
     } else {
@@ -345,7 +347,7 @@ void Properties::sellHouse(Player *owner, int propertyIndex)
     printOption.str("");
     printOption << " you have sold "<< numberOfHousesSold << " Houses on " << std::endl;
     transaction(owner->getName(), info.propertyName, printOption.str());
-    owner->transaction->addMoney(calculateSellingCostHouse(propertyIndex, numberOfHousesSold));
+    owner->transaction->deposit(calculateSellingCostHouse(propertyIndex, numberOfHousesSold));
     info.numberOfHouses = info.numberOfHouses - numberOfHousesSold;
 }
 
@@ -430,7 +432,6 @@ int Properties::printList(std::vector<std::string> list, std::string printOption
 
     }
     
-
     return std::stoi(option);
 
 }

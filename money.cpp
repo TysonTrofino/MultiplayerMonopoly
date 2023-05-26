@@ -7,41 +7,41 @@
 
 Money::Money(std::string name_)
 {
-    moneyAmount = 500;
+    balance = 500;
     name = name_;
 }
 
 Money::~Money()
 {
-    moneyAmount = 0;
+    balance = 0;
 }
 
-int Money::getMoneyAmount()
+int Money::bankAccountBalance()
 {
-    return moneyAmount;
+    return balance;
 }
 
-void Money::printMoneyAmount(std::string word)
+void Money::printBankAccountBalance(std::string word)
 {
-    std::cout << name << word << " has $" << moneyAmount << std::endl; 
+    std::cout << name << word << " has $" << balance << std::endl; 
 }
 
 void Money::passGo()
 {
-    addMoney(200);
+    deposit(200);
     std::cout << name << " passed go and collected $200" << std::endl;
-    printMoneyAmount(" now");
+    printBankAccountBalance(" now");
 }
 
-void Money::addMoney(int amount)
+void Money::deposit(int amount)
 {
-    moneyAmount += amount;
-    printMoneyAmount(" now");
+    balance += amount;
+    printBankAccountBalance(" now");
 
 }
 
-void Money::subtractMoney(int amount)
+void Money::withdrawal(int amount)
 {
-    moneyAmount -=amount;
-    printMoneyAmount(" now");
+    balance -=amount;
+    printBankAccountBalance(" now");
 }

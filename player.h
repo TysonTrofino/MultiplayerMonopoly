@@ -27,6 +27,8 @@ class Player
         void deleteProperty(int propertyLocation);
 
         Money *transaction;
+
+        int getPlayerMoneyAmount();
         
     private:
         std::string name;

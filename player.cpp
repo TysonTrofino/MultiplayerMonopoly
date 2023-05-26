@@ -59,3 +59,8 @@ void Player::deleteProperty(int propertyLocation)
     auto index = std::find(propertyArray.begin(), propertyArray.end(), propertyLocation);
     propertyArray.erase(propertyArray.begin() + std::distance(propertyArray.begin(), index));
 }
+
+int Player::getPlayerMoneyAmount()
+{
+    return transaction->bankAccountBalance();
+}
