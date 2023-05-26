@@ -9,6 +9,8 @@
 #include "properties.h"
 #include "player.h"
 
+int maxNumberOfHousesPerProperty = 3;
+int maxNumberOfHotelsPerProperty = 2;
 
 Properties* Properties::instance = NULL;
 std::vector<Properties::PropertyInfo>* Properties::property;
@@ -165,7 +167,8 @@ void Properties::buyProperty(Player *buyer, int propertyIndex)
 
 void Properties::sellProperty(Player *seller, std::vector<int>propertiesList)
 {
-    std::ostringstream printOption << "Which property do you want to sell?  Please enter the appropriate index:" << std::endl;
+    std::ostringstream printOption;
+    printOption << "Which property do you want to sell?  Please enter the appropriate index:" << std::endl;
 
     int propertyIndex = printPropertiesList(propertiesList, printOption.str())-2;
     if(propertyIndex == -1)
@@ -175,14 +178,19 @@ void Properties::sellProperty(Player *seller, std::vector<int>propertiesList)
     } else {
 
         PropertyInfo & info = property->at(propertiesList[propertyIndex]);
+        std::ostringstream printOption1;
+        std::ostringstream printOption2;
+        std::ostringstream printOption3;
+        
 
         printOption.str("");
         printOption << "Which part of " << info.propertyName << "do you want to sell?" << std::endl;
-        std::ostringstream printOption1 << "1. All of " << info.propertyName << " for $" << calculateSellingCostProperty(propertiesList[propertyIndex]) << "." << std::endl;
-        std::ostringstream printOption2 << "2." << info.numberOfHouses <<" Houses on " << info.propertyName << " for $" << calculateSellingCostHouse(propertiesList[propertyIndex]) << "." << std::endl;
-        std::ostringstream printOption3 << "3." << info.numberOfHotels <<" Hotels on " << info.propertyName << " for $" << calculateSellingCostHotel(propertiesList[propertyIndex]) << "." << std::endl;
+        
+        printOption1 << "1. All of " << info.propertyName << " for $" << calculateSellingCostProperty(propertiesList[propertyIndex]) << "." << std::endl;
+        printOption2 << "2." << info.numberOfHouses <<" Houses on " << info.propertyName << " for $" << calculateSellingCostHouse(propertiesList[propertyIndex], info.numberOfHouses) << "." << std::endl;
+        printOption3 << "3." << info.numberOfHotels <<" Hotels on " << info.propertyName << " for $" << calculateSellingCostHotel(propertiesList[propertyIndex], info.numberOfHotels) << "." << std::endl;
        
-        switch(printList({printOption1.str(), printOption2.str(), printOption3.str()}, printOption, 1))
+        switch(printList({printOption1.str(), printOption2.str(), printOption3.str()}, printOption.str(), 1))
         {
             case 1:
                 transaction(seller->getName(), info.propertyName, " you have sold everything on");
@@ -192,19 +200,10 @@ void Properties::sellProperty(Player *seller, std::vector<int>propertiesList)
                 break;
 
             case 2:
-                printOption.str("");
-                printOption << " you have sold "<< info.numberOfHouses << " Houses on " << info.propertyName << std::endl;
-                transaction(seller->getName(), info.propertyName, printOption.str());
-                seller->transaction->addMoney(calculateSellingCostHouse(propertiesList[propertyIndex]));
-                info.numberOfHouses = 0;
-                break;
+                sellHouse(seller, propertiesList[propertyIndex]);
 
             case 3:
-                printOption.str("");
-                printOption << " you have sold "<< info.numberOfHotels << " Hotels on " << info.propertyName << std::endl;
-                transaction(seller->getName(), info.propertyName, printOption.str());
-                seller->transaction->addMoney(calculateSellingCostHotel(propertiesList[propertyIndex]));
-                info.numberOfHotels = 0;
+
                 break;
         }
     }
@@ -270,7 +269,6 @@ void Properties::buyHouse(Player *owner, int propertyIndex)
     PropertyInfo & info = property->at(propertyIndex);
     std::ostringstream oss;
     
-    int maxNumberOfHousesPerProperty = 3;
     std::vector<std::string>costPerProperty;
     int multiplyer;
 
@@ -284,6 +282,11 @@ void Properties::buyHouse(Player *owner, int propertyIndex)
 
     std::cout << "There are currently " << info.numberOfHouses << " and you can have up to " << maxNumberOfHousesPerProperty <<"."<<std::endl; 
     std::cout << owner->getName() << ", you currently have $" << owner->transaction->getMoneyAmount() << "." << std::endl;
+
+    if(info.numberOfHouses == maxNumberOfHousesPerProperty) {
+        std::cout << "You have bought the max number of houses for " << info.propertyName << std::endl;
+        return;
+    }
 
     for(int i = info.numberOfHouses; i<maxNumberOfHousesPerProperty; i++)
     {
@@ -323,7 +326,27 @@ void Properties::buyHouse(Player *owner, int propertyIndex)
 
 void Properties::sellHouse(Player *owner, int propertyIndex)
 {
-    
+    PropertyInfo & info = property->at(propertyIndex);
+    std::ostringstream listOption;
+    std::vector<std::string>list;
+    int numberOfHousesSold = 0;
+    std::ostringstream printOption;
+
+    printOption << "How many houses would you like to sell?" << std::endl;
+
+    for(int i = 0; i < info.numberOfHouses; i++)
+    {
+        listOption << i+1 << ". house for " << calculateSellingCostHouse(propertyIndex, i+1);
+        list.push_back(listOption.str());
+        listOption.str("");
+    }
+
+    numberOfHousesSold = printList(list, printOption.str(), 1);
+    printOption.str("");
+    printOption << " you have sold "<< numberOfHousesSold << " Houses on " << std::endl;
+    transaction(owner->getName(), info.propertyName, printOption.str());
+    owner->transaction->addMoney(calculateSellingCostHouse(propertyIndex, numberOfHousesSold));
+    info.numberOfHouses = info.numberOfHouses - numberOfHousesSold;
 }
 
 
@@ -338,19 +361,19 @@ int Properties::calculateSellingCostProperty(int propertyIndex)
 {
     PropertyInfo sell = property->at(propertyIndex);
 
-    return (sell.buyingCost / 10) + calculateSellingCostHouse(propertyIndex) + calculateSellingCostHotel(propertyIndex);
+    return (sell.buyingCost / 10) + calculateSellingCostHouse(propertyIndex, sell.numberOfHouses) + calculateSellingCostHotel(propertyIndex, sell.numberOfHotels);
 }
 
-int Properties::calculateSellingCostHotel(int propertyIndex)
+int Properties::calculateSellingCostHotel(int propertyIndex, int numberOfHotels)
 {
     PropertyInfo sell = property->at(propertyIndex);
-    return (sell.hotelCost * sell.numberOfHotels)/5;
+    return (sell.hotelCost * numberOfHotels)/5;
 }
 
-int Properties::calculateSellingCostHouse(int propertyIndex)
+int Properties::calculateSellingCostHouse(int propertyIndex, int numberOfHouses)
 {
     PropertyInfo sell = property->at(propertyIndex);
-    return (sell.houseCost * sell.numberOfHouses)/10;
+    return (sell.houseCost * numberOfHouses)/10;
 }
 
 bool Properties::checkMoney(int playerWealth, int price)

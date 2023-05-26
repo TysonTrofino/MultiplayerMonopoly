@@ -9,7 +9,8 @@
 #include "money.h"
 
 
-
+extern int maxNumberOfHousesPerProperty;
+extern int maxNumberOfHotelsPerProperty;
 
 class Properties
 {
@@ -39,8 +40,8 @@ class Properties
 
         static int calculateRent(int propertyIndex);
         static int calculateSellingCostProperty(int propertyIndex);
-        static int calculateSellingCostHotel(int propertyIndex);
-        static int calculateSellingCostHouse(int propertyIndex);
+        static int calculateSellingCostHotel(int propertyIndex, int numberOfHotels);
+        static int calculateSellingCostHouse(int propertyIndex, int numberOfHouses);
         
 
     
