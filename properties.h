@@ -16,7 +16,7 @@ class Properties
 {
     public:
 
-        static Properties* initializeProperties(std::string propertyFile);
+        static Properties* initializeProperties(std::string propertyFile, bool TEST_MODE = false);
 
         static void printPropertiesList();
         static void printPropertyInfo(std::vector<int> propertyIndexs);
@@ -24,6 +24,8 @@ class Properties
         static int getPropertyCost(int propertyIndex);
         static void printPropertyOwner();
         static int getPropertyOwnerIndex(int propertyIndex);
+        static int getNumberOfHouses(int propertyIndex);
+        static int getNumberOfHotels(int propertyIndex);
 
         static void buyProperty(Player *buyer, int propertyIndex);
         static void sellProperty(Player *seller, std::vector<int>propertiesList);
@@ -43,6 +45,7 @@ class Properties
         static int calculateSellingCostHotel(int propertyIndex, int numberOfHotels);
         static int calculateSellingCostHouse(int propertyIndex, int numberOfHouses);
         
+        static void setTestOptionSelectionList(std::vector<std::string> testList_);
 
     
     private:
@@ -60,6 +63,9 @@ class Properties
         
         static Properties* instance;
         static std::vector<PropertyInfo>*property;
+        static bool TEST_MODE;
+        static std::vector<std::string> testList;
+        static int count;
 
         static bool checkMoney(int playerWealth, int price);
         static void initializePropertyOwner(PropertyInfo &info);
@@ -71,10 +77,10 @@ class Properties
         static void welcomeTo(std::string property, std::string phrase, int price);
 
         static int checkNumberOfProperties(Player *player_, std::string cantAffordOption, std::string noPropertiesOption, std::vector<std::string>printListOptions, std::string printListPhrase="");
-
+        
     
     protected:    
-        Properties(std::string propertyFile);
+        Properties(std::string propertyFile, bool TEST_MODE_);
 
 
 

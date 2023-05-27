@@ -13,10 +13,10 @@ bool TEST_MODE = true;
 
 int main(){
 
+    //bool TEST_MODE = true;
     if(TEST_MODE) {
-        Test cases;
+        Test cases = Test(TEST_MODE);
         
-
     } else {
 
 

@@ -14,20 +14,24 @@ int maxNumberOfHotelsPerProperty;
 
 Properties* Properties::instance = NULL;
 std::vector<Properties::PropertyInfo>* Properties::property;
+bool Properties::TEST_MODE;
+std::vector<std::string> Properties::testList;
+int Properties::count;
 
-Properties* Properties::initializeProperties(std::string propertyFile)
+Properties* Properties::initializeProperties(std::string propertyFile, bool TEST_MODE)
 {
     if(!instance) {
-        instance = new Properties(propertyFile);
+        instance = new Properties(propertyFile, TEST_MODE);
     }
     return instance;
 }
 
-Properties::Properties(std::string propertyFile)
+Properties::Properties(std::string propertyFile, bool TEST_MODE_)
 {
     maxNumberOfHotelsPerProperty = 3;
     maxNumberOfHousesPerProperty = 2;
     property = new std::vector<Properties::PropertyInfo>;
+    TEST_MODE = TEST_MODE_;
 
     std::fstream inFile;
     std::string lineOfData;
@@ -92,7 +96,7 @@ int Properties::printPropertiesList(std::vector<int>list, std::string printOptio
     std::vector<std::string>ownersPropertyList = {oss.str()};
 
     if(!notSelling) {
-        ownersPropertyList.push_back("1 ----------------- I-DO-NOT-WANT-TO-SELL-ANY-PROPERTIES ------------------");
+        ownersPropertyList.push_back(" | 1 --------------------------------- I-DO-NOT-WANT-TO-SELL-ANY-PROPERTIES ---------------------------------");
         indexIncrease = 2;
     } else {
         indexIncrease = 1;
@@ -121,7 +125,6 @@ int Properties::printPropertiesList(std::vector<int>list, std::string printOptio
     }
 
     return printList(ownersPropertyList, printOptions, 1);
-   
 }
 
 void Properties::printPropertyInfo(std::vector<int> propertyIndexs)
@@ -129,6 +132,21 @@ void Properties::printPropertyInfo(std::vector<int> propertyIndexs)
     std::cout << "here" << std::endl;
     printPropertiesList(propertyIndexs, "", true);
     
+}
+
+int Properties::getPropertyOwnerIndex(int propertyIndex)
+{
+    return property->at(propertyIndex).ownerIndex;
+}
+
+int Properties::getNumberOfHouses(int propertyIndex)
+{
+    return property->at(propertyIndex).numberOfHouses;
+}
+
+int Properties::getNumberOfHotels(int propertyIndex)
+{
+    return property->at(propertyIndex).numberOfHotels;
 }
 
 void Properties::buyProperty(Player *buyer, int propertyIndex)
@@ -160,6 +178,7 @@ void Properties::buyProperty(Player *buyer, int propertyIndex)
                 buyProperty(buyer, propertyIndex);
                 break;
             case 2:
+                std::cout << buyer->getName()<< " your turn is over." << std::endl;
                 break;
         };
         
@@ -394,43 +413,45 @@ int Properties::printList(std::vector<std::string> list, std::string printOption
     std::string option = "0";
     bool validAns = 0;
 
-    
-    if(printOptions != "")
+    do
     {
-        do
+        if(indexIncluded)
         {
-            if(indexIncluded)
+            for(int i = 0; i< size; i++)
             {
-                for(int i = 0; i< size; i++)
-                {
-                    std::cout << list[i] << std::endl;
-                }
-
-            } else {
-                std::cout << "------Menu------" << std::endl;
-                for(int i = 0; i < size; i++)
-                {
-                    std::cout << i+1 << ". " << list[i] << std::endl;
-                }
+                std::cout << list[i] << std::endl;
             }
-            
-            std::cout<<printOptions<<std::endl;
-            getline(std::cin, option);
 
-            if(std::stoi(option) < 1 || std::stoi(option) > size) {
-                std::cout << "Please enter a valid number between 1 and " << size << std::endl;
-            } else {
-                validAns = 1;
+        } else {
+            std::cout << "------Menu------" << std::endl;
+            for(int i = 0; i < size; i++)
+            {
+                std::cout << i+1 << ". " << list[i] << std::endl;
             }
-                
-        }while(!validAns);
-    } else {
-        for(int i = 0; i< size; i++)
-        {
-            std::cout << list[i] << std::endl;
         }
 
-    }
+        if(TEST_MODE)
+        {
+            std::cout << "Made it" << std::endl;
+            option = testList[count];
+            count++;
+            
+
+        } else {
+            std::cout<<printOptions<<std::endl;
+            getline(std::cin, option);
+        }
+               
+
+        if(std::stoi(option) < 1 || std::stoi(option) > size) {
+            std::cout << "Please enter a valid number between 1 and " << size << std::endl;
+        } else {
+            validAns = 1;
+        }
+            
+    }while(!validAns);
+
+
     
     return std::stoi(option);
 
@@ -464,4 +485,15 @@ int Properties::checkNumberOfProperties(Player *player_, std::string cantAffordO
     }
 
     return 2;
+}
+
+void Properties::setTestOptionSelectionList(std::vector<std::string> testList_)
+{
+    if(TEST_MODE)
+    {
+        count = 0;
+        testList = testList_;
+    } else {
+        std::cout << "You are not in testing mode " << std::endl;
+    }
 }

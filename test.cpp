@@ -7,11 +7,10 @@
 #include "properties.h"
 #include "money.h"
 
-Test::Test()
+Test::Test(bool TEST_MODE)
 {
-    Properties::initializeProperties("prop.csv");
+    Properties::initializeProperties("prop.csv", TEST_MODE);
     runAllTests();
-
 }
 
 Test::~Test()
@@ -23,6 +22,7 @@ void Test::runAllTests()
 {
     runPlayerTests();
     runMoneyTests();
+    runPropertyTests();
 
 }
 
@@ -46,6 +46,8 @@ void Test::playerInitializedCorrectly()
 
     std::cout << "Passed playerInitializedCorrectly" << std::endl;
 
+    delete player1;
+
 }
 
 void Test::updatePlayerLocation()
@@ -60,6 +62,8 @@ void Test::updatePlayerLocation()
     assert(player1->getPlayerLocation() == 7);
 
     std::cout << "Passed updatePlayerLocation" << std::endl;
+
+    delete player1;
 }
 
 void Test::playerPropertys()
@@ -81,6 +85,8 @@ void Test::playerPropertys()
     assert(player1->getPropertyLocations() == testCheck3);
 
     std::cout << "Passed playerPropertys" << std::endl;
+
+    delete player1;
 }
 
 
@@ -88,6 +94,8 @@ void Test::playerPropertys()
 void Test::runMoneyTests()
 {
     depositMoney();
+    withdrawalMoney();
+    passGo();
 }
 
 void Test::depositMoney()
@@ -106,8 +114,57 @@ void Test::depositMoney()
 
     std::cout << "Passed depositMoney" << std::endl;
 
-
+    delete player1;
 }
 
+void Test::withdrawalMoney()
+{
+    Player *player1 = new Player("player1", 1);
+    assert(player1->getPlayerMoneyAmount() == 500);
+    player1->transaction->withdrawal(300);
+    assert(player1->getPlayerMoneyAmount() == 200);
+
+    player1->transaction->withdrawal(100);
+    player1->transaction->withdrawal(50);
+    player1->transaction->withdrawal(1);
+
+    assert(player1->getPlayerMoneyAmount() == 49);
+
+    std::cout << "Passed withdrawalMoney" << std::endl;
+    delete player1;
+}
+
+void Test::passGo()
+{
+    Player *player1 = new Player("player1", 1);
+    assert(player1->getPlayerMoneyAmount() == 500);
+   
+    player1->transaction->passGo();
+
+    assert(player1->getPlayerMoneyAmount() == 700);    
+
+    std::cout << "Passed passGo" << std::endl;
+    delete player1;
+}
+
+void Test::runPropertyTests()
+{
+    buyProperty();
+}
+
+void Test::buyProperty()
+{
+    Player *player1 = new Player("player1", 1);
+
+    Properties::buyProperty(player1, 2);
+    Properties::setTestOptionSelectionList({"-1","4", "1", "1", "2"});
+    Properties::buyProperty(player1, 4);
+
+    assert(Properties::getPropertyOwnerIndex(2) == 1);
+    assert(Properties::getPropertyOwnerIndex(4) == -1);
+    
+    std::cout << "Passed buyProperty" << std::endl;
+    
+}
 
 
