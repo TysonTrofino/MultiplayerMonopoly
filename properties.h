@@ -26,6 +26,7 @@ class Properties
         static int getPropertyOwnerIndex(int propertyIndex);
         static int getNumberOfHouses(int propertyIndex);
         static int getNumberOfHotels(int propertyIndex);
+        static std::string getOwnerName(int propertyIndex);
 
         static void buyProperty(Player *buyer, int propertyIndex);
         static void sellProperty(Player *seller, std::vector<int>propertiesList);
@@ -64,7 +65,7 @@ class Properties
         static Properties* instance;
         static std::vector<PropertyInfo>*property;
         static bool TEST_MODE;
-        static std::vector<std::string> testList;
+        static std::vector<std::string>* testList;
         static int count;
 
         static bool checkMoney(int playerWealth, int price);

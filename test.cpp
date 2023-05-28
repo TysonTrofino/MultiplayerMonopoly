@@ -150,6 +150,30 @@ void Test::passGo()
 void Test::runPropertyTests()
 {
     buyProperty();
+    sellProperty();
+    buyHouseAndSellHouse();
+    buyHotelAndSellHotel();
+}
+
+void Test::propertyChecks(int propertyIndex, Player *testPlayer, int numberOfHouses, int numberOfHotels)
+{
+    std::vector<int>propertys = testPlayer->getPropertyLocations();
+    int playerIndex = -1;
+    std::string owner = "No Owner";
+
+    for(int i = 0; i < propertys.size(); i++)
+    {
+        if(propertys[i]==propertyIndex)
+        {
+            playerIndex = testPlayer->getPlayerIndex();
+            owner = testPlayer->getName();
+        }
+    }
+
+    assert(Properties::getPropertyOwnerIndex(propertyIndex) == playerIndex);
+    assert(Properties::getNumberOfHouses(propertyIndex) == numberOfHouses);
+    assert(Properties::getNumberOfHotels(propertyIndex) == numberOfHotels);
+    assert(Properties::getOwnerName(propertyIndex) == owner);
 }
 
 void Test::buyProperty()
@@ -160,11 +184,108 @@ void Test::buyProperty()
     Properties::setTestOptionSelectionList({"-1","4", "1", "1", "2"});
     Properties::buyProperty(player1, 4);
 
-    assert(Properties::getPropertyOwnerIndex(2) == 1);
-    assert(Properties::getPropertyOwnerIndex(4) == -1);
+    propertyChecks(2,player1);
+    propertyChecks(4, player1);
     
+    delete player1;
     std::cout << "Passed buyProperty" << std::endl;
-    
 }
+
+void Test::sellProperty()
+{
+    Player *player1 = new Player("player1", 1);
+    Properties::buyProperty(player1, 3);
+    std::vector<int>propertyCheck = {};
+
+    Properties::setTestOptionSelectionList({"2","1"});
+    Properties::sellProperty(player1, player1->getPropertyLocations());
+    propertyChecks(3, player1);
+    assert(player1->getPropertyLocations() == propertyCheck);
+
+    player1->transaction->deposit(1000);
+    Properties::buyProperty(player1, 4);
+    Properties::buyProperty(player1, 2);
+
+    Properties::setTestOptionSelectionList({"1"});
+    Properties::sellProperty(player1, player1->getPropertyLocations());
+
+    Properties::setTestOptionSelectionList({"3", "1"});
+    Properties::sellProperty(player1, player1->getPropertyLocations());
+    propertyCheck = {4};
+    assert(player1->getPropertyLocations() == propertyCheck);
+    propertyChecks(4, player1);
+
+    Properties::setTestOptionSelectionList({"1", "2", "1"});
+    Properties::buyProperty(player1, 9);
+    propertyChecks(9, player1);
+
+    std::cout << "Passed sellProperty" << std::endl;
+    delete player1;
+
+}
+
+void Test::buyHouseAndSellHouse()
+{
+    Player *player1 = new Player("player1", 1);
+    Properties::buyProperty(player1, 3);
+
+    Properties::setTestOptionSelectionList({"1", "2", "2"});
+    Properties::buyHouse(player1, 3);
+    Properties::buyHouse(player1, 3);
+    propertyChecks(3, player1,1);
+    player1->transaction->deposit(60);
+    Properties::buyHouse(player1, 3);
+    propertyChecks(3, player1, 1);
+
+    player1->transaction->deposit(200);
+    Properties::setTestOptionSelectionList({"2"});
+    Properties::buyHouse(player1,3);
+    propertyChecks(3, player1, 3);
+
+
+
+
+    Properties::setTestOptionSelectionList({"1", "1", "2", "2", "2", "2"});
+    Properties::sellHouse(player1, 3);
+    propertyChecks(3, player1, 2);
+    Properties::buyProperty(player1, 7);
+    propertyChecks(3, player1, 0);
+
+    std::cout << "Passed buyHouseAndSellHouse" << std::endl;
+    delete player1;
+
+}
+
+void Test::buyHotelAndSellHotel()
+{
+    Player *player1 = new Player("player1", 1);
+    Properties::buyProperty(player1, 3);
+
+    Properties::setTestOptionSelectionList({"1", "1", "1"});
+    Properties::buyHotel(player1, 3);
+    Properties::buyHotel(player1, 3);
+    propertyChecks(3, player1,0,1);
+    player1->transaction->deposit(160);
+    Properties::buyHotel(player1, 3);
+    propertyChecks(3, player1, 0, 2);
+
+    player1->transaction->deposit(200);
+    Properties::setTestOptionSelectionList({"2"});
+    Properties::buyHotel(player1,3);
+    propertyChecks(3, player1, 0, 2);
+
+
+    Properties::setTestOptionSelectionList({"1", "1", "2", "3", "1", "2"});
+    Properties::sellHotel(player1, 3);
+    propertyChecks(3, player1, 0, 1);
+    Properties::buyProperty(player1, 7);
+    propertyChecks(3, player1, 0);
+
+    std::cout << "Passed buyHotelAndSellHotel" << std::endl;
+    delete player1;
+}
+
+
+
 
 

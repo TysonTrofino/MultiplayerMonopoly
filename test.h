@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include "player.h"
 
 extern std::vector<std::string> sequences;
 
@@ -30,12 +31,15 @@ class Test
         void passGo();
 
         //property tests
+    
+        void propertyChecks(int propertyIndex, Player *testPlayer, int numberOfHouses = 0, int numberOfHotels = 0);
         void buyProperty();
         void sellProperty();
         void buyHouseAndSellHouse();
         void buyHotelAndSellHotel();
         void payRentSuccessfully();
         void payRentGameOver();
+
 
 
 

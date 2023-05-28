@@ -15,7 +15,7 @@ int maxNumberOfHotelsPerProperty;
 Properties* Properties::instance = NULL;
 std::vector<Properties::PropertyInfo>* Properties::property;
 bool Properties::TEST_MODE;
-std::vector<std::string> Properties::testList;
+std::vector<std::string> *Properties::testList;
 int Properties::count;
 
 Properties* Properties::initializeProperties(std::string propertyFile, bool TEST_MODE)
@@ -28,9 +28,10 @@ Properties* Properties::initializeProperties(std::string propertyFile, bool TEST
 
 Properties::Properties(std::string propertyFile, bool TEST_MODE_)
 {
-    maxNumberOfHotelsPerProperty = 3;
-    maxNumberOfHousesPerProperty = 2;
+    maxNumberOfHotelsPerProperty = 2;
+    maxNumberOfHousesPerProperty = 3;
     property = new std::vector<Properties::PropertyInfo>;
+    testList = new std::vector<std::string>;
     TEST_MODE = TEST_MODE_;
 
     std::fstream inFile;
@@ -106,7 +107,6 @@ int Properties::printPropertiesList(std::vector<int>list, std::string printOptio
 
     for(int i = 0; i<size; i++)
     {
-       std::cout << "here1" << std::endl;
         oss.str("");
 
         oss << " | " << std::left << std::setw(5) << i+indexIncrease;
@@ -147,6 +147,11 @@ int Properties::getNumberOfHouses(int propertyIndex)
 int Properties::getNumberOfHotels(int propertyIndex)
 {
     return property->at(propertyIndex).numberOfHotels;
+}
+
+std::string Properties::getOwnerName(int propertyIndex)
+{
+    return property->at(propertyIndex).owner;
 }
 
 void Properties::buyProperty(Player *buyer, int propertyIndex)
@@ -202,7 +207,6 @@ void Properties::sellProperty(Player *seller, std::vector<int>propertiesList)
         std::ostringstream printOption1;
         std::ostringstream printOption2;
         std::ostringstream printOption3;
-        
 
         printOption.str("");
         printOption << "Which part of " << info.propertyName << "do you want to sell?" << std::endl;
@@ -214,7 +218,7 @@ void Properties::sellProperty(Player *seller, std::vector<int>propertiesList)
         switch(printList({printOption1.str(), printOption2.str(), printOption3.str()}, printOption.str(), 1))
         {
             case 1:
-                transaction(seller->getName(), info.propertyName, " you have sold everything on");
+                transaction(seller->getName(), info.propertyName, " you have sold everything on ");
                 initializePropertyOwner(info);
                 seller->transaction->deposit(calculateSellingCostProperty(propertiesList[propertyIndex]));
                 seller->deleteProperty(propertiesList[propertyIndex]);
@@ -222,9 +226,10 @@ void Properties::sellProperty(Player *seller, std::vector<int>propertiesList)
 
             case 2:
                 sellHouse(seller, propertiesList[propertyIndex]);
+                break;
 
             case 3:
-
+                sellHotel(seller, propertiesList[propertyIndex]);
                 break;
         }
     }
@@ -291,7 +296,7 @@ void Properties::buyHouse(Player *owner, int propertyIndex)
     std::ostringstream oss;
     
     std::vector<std::string>costPerProperty;
-    int multiplyer;
+    int houseQuantity;
 
     if(owner->transaction->bankAccountBalance() < info.houseCost)
     {   
@@ -301,18 +306,23 @@ void Properties::buyHouse(Player *owner, int propertyIndex)
         return;
     }
 
-    std::cout << "There are currently " << info.numberOfHouses << " and you can have up to " << maxNumberOfHousesPerProperty <<"."<<std::endl; 
-    std::cout << owner->getName() << ", you currently have $" << owner->transaction->bankAccountBalance() << "." << std::endl;
-
     if(info.numberOfHouses == maxNumberOfHousesPerProperty) {
         std::cout << "You have bought the max number of houses for " << info.propertyName << std::endl;
         return;
+    } else {
+        std::cout << "There are currently " << info.numberOfHouses << " houses and you can have up to " << maxNumberOfHousesPerProperty <<" houses."<<std::endl; 
+        std::cout << owner->getName() << ", you currently have $" << owner->transaction->bankAccountBalance() << "." << std::endl;
     }
 
     for(int i = info.numberOfHouses; i<maxNumberOfHousesPerProperty; i++)
     {
-        multiplyer = i+1;
-        oss << multiplyer << " house will cost $" << multiplyer*info.houseCost << std::endl;
+        if(info.numberOfHouses == 0)
+        {
+            houseQuantity = i+1;
+        } else {
+            houseQuantity = i;
+        }
+        oss << houseQuantity << " house will cost $" << houseQuantity*info.houseCost << std::endl;
         costPerProperty.push_back(oss.str());
         oss.str("");
     }
@@ -321,7 +331,7 @@ void Properties::buyHouse(Player *owner, int propertyIndex)
 
     if(checkMoney(owner->transaction->bankAccountBalance(), info.houseCost * numberOfHousesToPurchase))
     {
-        transaction(owner->getName(), info.propertyName, ", you have bought a house on");
+        transaction(owner->getName(), info.propertyName, ", you have bought a house on ");
 
         owner->transaction->withdrawal(info.houseCost * numberOfHousesToPurchase);
         info.numberOfHouses += numberOfHousesToPurchase;
@@ -357,7 +367,7 @@ void Properties::sellHouse(Player *owner, int propertyIndex)
 
     for(int i = 0; i < info.numberOfHouses; i++)
     {
-        listOption << i+1 << ". house for " << calculateSellingCostHouse(propertyIndex, i+1);
+        listOption << i+1 << ". house for $" << calculateSellingCostHouse(propertyIndex, i+1);
         list.push_back(listOption.str());
         listOption.str("");
     }
@@ -368,6 +378,96 @@ void Properties::sellHouse(Player *owner, int propertyIndex)
     transaction(owner->getName(), info.propertyName, printOption.str());
     owner->transaction->deposit(calculateSellingCostHouse(propertyIndex, numberOfHousesSold));
     info.numberOfHouses = info.numberOfHouses - numberOfHousesSold;
+}
+
+void Properties::buyHotel(Player *owner, int propertyIndex)
+{
+    PropertyInfo & info = property->at(propertyIndex);
+    std::ostringstream oss;
+    
+    std::vector<std::string>costPerProperty;
+    int hotelQuantity;
+
+    if(owner->transaction->bankAccountBalance() < info.hotelCost)
+    {   
+        oss << "buy a hotel on " << info.propertyName << "." << std::endl;
+        oss << "1 hotel costs $" <<info.hotelCost << " and you have $" << owner->transaction->bankAccountBalance() << " in your bank account." << std::endl; 
+        cantAfford(owner->getName(), oss.str());
+        return;
+    }
+
+    if(info.numberOfHotels == maxNumberOfHotelsPerProperty) {
+        std::cout << "You have bought the max number of hotels for " << info.propertyName << std::endl;
+        return;
+    } else {
+        std::cout << "There are currently " << info.numberOfHotels << " hotels and you can have up to " << maxNumberOfHotelsPerProperty <<" hotels."<<std::endl; 
+        std::cout << owner->getName() << ", you currently have $" << owner->transaction->bankAccountBalance() << "." << std::endl;
+    }
+
+    for(int i = info.numberOfHotels; i<maxNumberOfHotelsPerProperty; i++)
+    {
+        if(info.numberOfHotels == 0)
+        {
+            hotelQuantity = i+1;
+        } else {
+            hotelQuantity = i;
+        }
+        oss << hotelQuantity << " hotels will cost $" << hotelQuantity*info.hotelCost << std::endl;
+        costPerProperty.push_back(oss.str());
+        oss.str("");
+    }
+
+    int numberOfHotelsToPurchase = printList(costPerProperty, "How many hotels would you like to purchase?", 1);
+
+    if(checkMoney(owner->transaction->bankAccountBalance(), info.hotelCost * numberOfHotelsToPurchase))
+    {
+        transaction(owner->getName(), info.propertyName, ", you have bought hotels on ");
+
+        owner->transaction->withdrawal(info.hotelCost * numberOfHotelsToPurchase);
+        info.numberOfHotels += numberOfHotelsToPurchase;
+
+    } else {
+        oss << "to purchase " << numberOfHotelsToPurchase << " hotels" << std::endl;
+        cantAfford(owner->getName(), oss.str());
+        int option = printList({"Yes", "No"}, "Would you like to try again?");
+
+        switch (option)
+        {
+        case 1:
+            buyHotel(owner, propertyIndex);
+            break;
+        
+        case 2:
+            std::cout << "No hotels were bought."  << owner->getName() << ", your turn is over" << std::endl;
+            break;
+        }
+        
+    }
+}
+
+void Properties::sellHotel(Player *owner, int propertyIndex)
+{
+    PropertyInfo & info = property->at(propertyIndex);
+    std::ostringstream listOption;
+    std::vector<std::string>list;
+    int numberOfHotelsSold = 0;
+    std::ostringstream printOption;
+
+    printOption << "How many hotels would you like to sell?" << std::endl;
+
+    for(int i = 0; i < info.numberOfHotels; i++)
+    {
+        listOption << i+1 << ". hotel for $" << calculateSellingCostHotel(propertyIndex, i+1);
+        list.push_back(listOption.str());
+        listOption.str("");
+    }
+
+    numberOfHotelsSold = printList(list, printOption.str(), 1);
+    printOption.str("");
+    printOption << " you have sold "<< numberOfHotelsSold << " Hotel on " << std::endl;
+    transaction(owner->getName(), info.propertyName, printOption.str());
+    owner->transaction->deposit(calculateSellingCostHotel(propertyIndex, numberOfHotelsSold));
+    info.numberOfHotels = info.numberOfHotels - numberOfHotelsSold;
 }
 
 
@@ -432,8 +532,10 @@ int Properties::printList(std::vector<std::string> list, std::string printOption
 
         if(TEST_MODE)
         {
-            std::cout << "Made it" << std::endl;
-            option = testList[count];
+            std::cout<<printOptions<<std::endl;
+            option = testList->at(count);
+
+            std::cout<<option << std::endl;
             count++;
             
 
@@ -487,12 +589,19 @@ int Properties::checkNumberOfProperties(Player *player_, std::string cantAffordO
     return 2;
 }
 
-void Properties::setTestOptionSelectionList(std::vector<std::string> testList_)
+void Properties::setTestOptionSelectionList(std::vector<std::string>testList_)
 {
+    if(!testList)
+    {
+        testList->clear();
+        delete testList;
+        testList = NULL;
+    }
+    
     if(TEST_MODE)
     {
         count = 0;
-        testList = testList_;
+        testList = new std::vector<std::string>(testList_);
     } else {
         std::cout << "You are not in testing mode " << std::endl;
     }
