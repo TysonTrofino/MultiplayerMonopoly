@@ -31,7 +31,7 @@ class Test
         void passGo();
 
         //property tests
-    
+        void resetProperties(Player *testPlayer);
         void propertyChecks(int propertyIndex, Player *testPlayer, int numberOfHouses = 0, int numberOfHotels = 0);
         void buyProperty();
         void sellProperty();

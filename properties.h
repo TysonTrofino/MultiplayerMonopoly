@@ -45,6 +45,7 @@ class Properties
         static int calculateSellingCostProperty(int propertyIndex);
         static int calculateSellingCostHotel(int propertyIndex, int numberOfHotels);
         static int calculateSellingCostHouse(int propertyIndex, int numberOfHouses);
+        static void gameOver(Player *loser);
         
         static void setTestOptionSelectionList(std::vector<std::string> testList_);
 

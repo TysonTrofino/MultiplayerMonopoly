@@ -153,6 +153,9 @@ void Test::runPropertyTests()
     sellProperty();
     buyHouseAndSellHouse();
     buyHotelAndSellHotel();
+
+    payRentSuccessfully();
+    payRentGameOver();
 }
 
 void Test::propertyChecks(int propertyIndex, Player *testPlayer, int numberOfHouses, int numberOfHotels)
@@ -187,8 +190,12 @@ void Test::buyProperty()
     propertyChecks(2,player1);
     propertyChecks(4, player1);
     
-    delete player1;
+    Properties::gameOver(player1);
+    propertyChecks(2, player1);
+    propertyChecks(4, player1);
+
     std::cout << "Passed buyProperty" << std::endl;
+    delete player1;
 }
 
 void Test::sellProperty()
@@ -220,6 +227,7 @@ void Test::sellProperty()
     propertyChecks(9, player1);
 
     std::cout << "Passed sellProperty" << std::endl;
+    Properties::gameOver(player1);
     delete player1;
 
 }
@@ -252,8 +260,8 @@ void Test::buyHouseAndSellHouse()
     propertyChecks(3, player1, 0);
 
     std::cout << "Passed buyHouseAndSellHouse" << std::endl;
+    Properties::gameOver(player1);
     delete player1;
-
 }
 
 void Test::buyHotelAndSellHotel()
@@ -282,7 +290,45 @@ void Test::buyHotelAndSellHotel()
     propertyChecks(3, player1, 0);
 
     std::cout << "Passed buyHotelAndSellHotel" << std::endl;
+    Properties::gameOver(player1);
     delete player1;
+}
+
+void Test::payRentSuccessfully()
+{
+    Player *player1 = new Player("player1", 1);
+    Player *player2 = new Player("player2", 2);
+
+    Properties::buyProperty(player1, 3);
+
+    Properties::payRent(player1, player2, 3);
+
+    std::cout << "Passed PayRent" << std::endl;
+    Properties::gameOver(player1);
+    Properties::gameOver(player2);
+    delete player1;
+    
+}
+
+void Test::payRentGameOver()
+{
+    Player *player1 = new Player("player1", 1);
+    Player *player2 = new Player("player2", 2);
+
+    
+    Properties::buyProperty(player1, 3);
+    Properties::buyProperty(player2, 4);
+
+    Properties::setTestOptionSelectionList({"1","2","1"});
+    Properties::payRent(player1, player2, 3);
+
+    
+    Properties::gameOver(player1);
+    delete player1;
+    delete player2;
+
+    std::cout << "payRentGameOver" << std::endl;
+    
 }
 
 

@@ -282,8 +282,7 @@ void Properties::payRent(Player *owner, Player *renter, int propertyIndex)
                 }
 
                 std::cout << renter->getName() << ", the game is over for you." << std::endl;
-                delete renter;
-                renter = NULL;
+                gameOver(renter);
 
                 break;
         };
@@ -587,6 +586,23 @@ int Properties::checkNumberOfProperties(Player *player_, std::string cantAffordO
     }
 
     return 2;
+}
+
+void Properties::gameOver(Player *loser)
+{
+    std::vector<int>loserPropertys = loser->getPropertyLocations();
+    for(int i = 0; i<loserPropertys.size(); i++)
+    {
+       initializePropertyOwner(property->at(loserPropertys[i]));
+       loser->deleteProperty(loserPropertys[i]);
+    }
+
+    if(!TEST_MODE)
+    {
+        delete loser;
+        loser = NULL;
+    }
+    
 }
 
 void Properties::setTestOptionSelectionList(std::vector<std::string>testList_)
